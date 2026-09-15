@@ -7,6 +7,7 @@ Domain Controller   |   DC##         |  DC01, DC02
 Windows Server      |   ROLE##       |  FILE01, APP01
 Windows Client      |   CLIENT##     |  CLIENT01
 Linux Server        |   LXSRVR##     |  LXSRVR01, LXSRVR02
+Virtual Switches    |   vSW-ROLE     |  vSW-EXT, vSW-SERVER
 
 
 # Current Objects
