@@ -1,0 +1,47 @@
+# ALL Files listed will NOT be saved to repository.
+
+# Virtual machine disks
+*.vhd
+*.vhdx
+*.avhd
+*.avhdx
+
+# Installation media
+*.iso
+
+# Hyper-V runtime files
+*.bin
+*.vsv
+*.vmrs
+*.vmcx
+
+# Raw packet captures
+*.pcap
+*.pcapng
+*.cap
+
+# Logs
+*.log
+
+# Credentials / secrets
+*.key
+*.pem
+*.pfx
+*.p12
+*.env
+
+# PowerShell temporary files
+*.tmp
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Temporary Files (Open)
+~$*
+
+# Operating system files
+Thumbs.db
+.DS_Store
