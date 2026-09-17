@@ -49,7 +49,21 @@ I'm also planning to break things on purpose sometimes, not just document accide
 
 ## Repo layout
 
-Docs, diagrams, scripts, and any troubleshooting write-ups will live in this repo as I go — I'll add folders as they're actually needed rather than scaffolding everything up front. No VM disks, ISOs, or credentials will ever be committed here.
+```
+NetLabz_Enterprise/
+├── diagrams/                        # network diagrams
+├── docs/
+│   ├── phase_0/                     # planning, baseline, standards
+│   └── phase_1/                     # virtual switching, test network
+├── incidents/                       # troubleshooting write-ups (INC001, etc.)
+├── NetLabz_Project_Checklist.xlsx   # full 21-phase task tracker
+├── README.md
+├── Screenshots/                     # evidence referenced from the docs above
+└── scripts/                         # PowerShell / Bash / Python automation
+```
+
+New folders get added here as new phases start — nothing gets scaffolded ahead of time. No VM disks, ISOs, or credentials are ever committed.
+
 
 ## Where things stand now
 
