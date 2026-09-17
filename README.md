@@ -65,7 +65,7 @@ NetLabz_Enterprise/
 New folders get added here as new phases start — nothing gets scaffolded ahead of time. No VM disks, ISOs, or credentials are ever committed.
 
 
-## Where things stand now
+## Project Status
 
 The host and repository are set up, and two temporary VMs can communicate on the client-side virtual switch. I'm finishing the Phase 1 packet captures and troubleshooting test before moving on to the firewall VM. Each phase has its own README with the setup, results, and screenshots. Full task-level tracking is in [`NetLabz_Project_Checklist.xlsx`](NetLabz_Project_Checklist.xlsx) — currently planning **Phase 2 of 21**.
 
