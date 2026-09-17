@@ -55,4 +55,4 @@ The gateway and DNS entries were configured on the VMs, but these screenshots do
 
 ## Where Phase 1 leaves things
 
-The two test VMs can talk to each other on `vSW-CLIENT`, and the pings and ARP entries confirm the basic network works — once I fix the addressing to match my own plan. Since I would need to download wireshark onto my VM in order to capture the traffic for that VM I will move that test to another phase, as well as the subnet troubleshooting since there isn't a router configured yet.
+My two test VMs can talk to each other on `vSW-CLIENT`, and the pings and ARP entries confirm the basic network works — once I fix the addressing to match my own plan. Since I would need to download wireshark onto my VM in order to capture the traffic for that VM I will move that test to another phase, as well as the subnet troubleshooting since there isn't a router configured yet.
