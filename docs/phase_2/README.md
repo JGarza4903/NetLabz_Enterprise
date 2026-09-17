@@ -1,6 +1,8 @@
 # Phase 2 — Firewall / Router VM
 
-In this phase, I started building the network edge for my NetLabz environment using OPNsense. I created a `FW01` virtual machine, connected it to both the external and client-side virtual switches, assigned the WAN and LAN interfaces, and configured the client network gateway at `10.10.20.1/24`. I then verified that `CLIENT01` could reach the firewall and opened the OPNsense web interface. The remaining work is to complete the installation to the virtual disk, verify outbound NAT and internet access, isolate the lab from the home network, and test a firewall rule failure.
+In this phase, I built the network edge for my NetLabz environment using OPNsense. I created `FW01` for my firewall VM, connected it to the external and Internal-Client Hyper-V switches, assigned WAN and LAN interfaces, and configured `10.10.20.1/24` as the gateway for the client network. I then installed OPNsense to the virtual disk, verified the configuration survived a reboot, and configured the WAN side so `CLIENT01` could route through the firewall to the internet.
+
+The remaining work is to isolate the lab from the home network, validate the firewall rules and DNS behavior, intentionally create and repair a firewall rule failure, and finish the Phase 2 documentation.
 
 ## Firewall platform
 
@@ -52,7 +54,9 @@ I did not configure LAGGs, VLANs, or optional interfaces during this phase. Thos
 
 ![OPNsense WAN and LAN interface assignment](../../Screenshots/2-firewall-interface-assignment.png)
 
-The WAN interface received `192.168.1.13/24` from the existing home network through DHCP. OPNsense initially used `192.168.1.1/24` on the LAN side, which would have placed both interfaces on the same subnet. I changed the LAN interface to the planned NetLabz client gateway, `10.10.20.1/24`.
+The WAN interface was initially configured as `192.168.1.13/24`, while the LAN interface initially used OPNsense's default `192.168.1.1/24`. This placed both interfaces on the same `192.168.1.0/24` network, so I changed the LAN interface to the planned NetLabz client gateway, `10.10.20.1/24`.
+
+During later connectivity testing, I also found that the WAN interface had been configured statically without an upstream gateway. I corrected the WAN configuration to use DHCP so the existing home router could provide both the WAN addressing information and the default gateway.
 
 ![Configuring the LAN IPv4 address](../../Screenshots/2-firewall-interface-ip.png)
 
@@ -61,9 +65,10 @@ The resulting interface configuration is:
 | Device / interface | IPv4 address | Network | Purpose |
 | --- | --- | --- | --- |
 | Home router | `192.168.1.1/24` | `192.168.1.0/24` | Existing upstream gateway |
-| `FW01` WAN | `192.168.1.13/24` | `192.168.1.0/24` | Connection to the home network |
+| `FW01` WAN | DHCP (`192.168.1.13/24` during testing) | `192.168.1.0/24` | Connection to the home network |
 | `FW01` LAN | `10.10.20.1/24` | `10.10.20.0/24` | NetLabz client gateway |
 | `CLIENT01` | `10.10.20.3/24` | `10.10.20.0/24` | Windows 11 lab client |
+
 
 ![Final WAN and LAN address assignment](../../Screenshots/2-firewall-interface-success.png)
 
@@ -105,6 +110,49 @@ After continuing to the site, I reached the OPNsense web interface and initial c
 
 ![OPNsense web GUI](../../Screenshots/2-firewall-gui-login.png)
 
+## Outbound routing and internet access
+
+After confirming that `CLIENT01` could reach the firewall, I tested connectivity beyond the LAN interface.
+
+The first test failed. `CLIENT01` could successfully ping `10.10.20.1`, but attempts to reach the home router at `192.168.1.1` or an internet address such as `8.8.8.8` failed. A traceroute stopped at `10.10.20.1`, with FW01 reporting that the destination was unreachable.
+
+![Connectivity failure before WAN gateway repair](../../Screenshots/2-firewall-pre-rules.png)
+
+The issue was traced to the WAN configuration. FW01 had a static WAN address but no upstream default gateway. Because the firewall did not have a usable default route, it had no path for traffic destined outside its directly connected networks.
+
+I changed the WAN interface to DHCP. The home router then supplied the WAN configuration and upstream gateway automatically.
+
+I documented the troubleshooting process separately in [INC005](../../Incidents/INC005-OPNsense-Default-Gateway.md).
+
+After correcting the WAN configuration, I repeated the tests from `CLIENT01`:
+
+- `ping 10.10.20.1` — successful
+- `ping 192.168.1.1` — successful
+- `ping 8.8.8.8` — successful
+- `nslookup google.com` — successful
+- `ping google.com` — successful
+- `tracert 8.8.8.8` — successful
+
+![CLIENT01 internet connectivity through FW01](../../Screenshots/2-firewall-client-communication.png)
+
+The traceroute showed the expected path beginning with FW01 at `10.10.20.1`, followed by the home router at `192.168.1.1`, before continuing through the ISP network.
+
+At this point, CLIENT01 had working internet access through OPNsense instead of being directly connected to the home network.
+
+
+## Installing OPNsense to the virtual disk
+
+The first OPNsense boot was running from the installation ISO in live media mode. This allowed me to configure and test the firewall, but those changes would not survive a reboot.
+
+I completed the OPNsense installation to the `FW01` virtual VHDX, disconnected the installation ISO, and rebooted the VM from the virtual disk. After rebooting, the WAN and LAN configuration remained intact and the live media warning was no longer displayed.
+
+This confirmed that the firewall configuration was now persistent before I continued with routing and NAT testing.
+
+
 ## Where Phase 2 leaves things
 
-`FW01` is up and routing between `vSW-EXT` and `vSW-CLIENT`, `CLIENT01` can reach the firewall's LAN gateway and pull up the OPNsense web GUI, and matching the Hyper-V adapters to OPNsense interfaces by MAC address kept the WAN/LAN assignment predictable instead of guessing. The catch is that OPNsense is still reporting **live media mode** — the VM is still booted from the ISO, so this whole configuration disappears on the next reboot. Before touching NAT or firewall policy, the next step is finishing the install to the `FW01` virtual disk and confirming the WAN/LAN setup survives a reboot. After that, Phase 2 still needs outbound NAT so `CLIENT01` can actually reach the internet, rules that stop the lab from reaching into the home network, an internet/DNS/isolation test, and one intentionally broken rule to troubleshoot with the logs. Reaching the gateway and web GUI only proves local LAN connectivity — NAT and isolation are still unverified.
+`FW01` is now installed to its virtual disk and operating as the gateway between the NetLabz client network and the existing home network. `CLIENT01` can reach the firewall at `10.10.20.1`, access the OPNsense web interface, resolve DNS names, and reach the internet through FW01.
+
+Testing also exposed a WAN routing problem caused by configuring the WAN interface with a static address but no upstream gateway. Changing the WAN interface to DHCP restored the default route and allowed traffic to leave the lab successfully. I documented that failure separately as an incident because it was a useful example of the difference between having an IP address and having a working route outside the local network.
+
+The remaining Phase 2 work is to prevent the NetLabz client network from initiating connections into the protected home network while still allowing internet access, verify the resulting firewall behavior and logs, intentionally create and repair one firewall rule failure, and commit the final Phase 2 documentation.

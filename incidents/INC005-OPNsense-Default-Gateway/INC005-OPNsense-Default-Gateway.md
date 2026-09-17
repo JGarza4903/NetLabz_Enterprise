@@ -19,20 +19,6 @@ Initial testing showed:
 
 Because the client could reach its default gateway but traffic failed immediately at `FW01`, the problem was narrowed down to routing on the firewall rather than the client-side network.
 
-```mermaid
-flowchart LR
-    CLIENT["CLIENT01<br/>10.10.20.3"] -->|ping OK| LAN["FW01 LAN<br/>10.10.20.1"]
-    LAN -->|ping OK| WAN["FW01 WAN<br/>192.168.1.13<br/>No default gateway"]
-    WAN -.->|"ping 192.168.1.1<br/>TIMEOUT"| HOME["Home Router<br/>192.168.1.1"]
-    WAN -.->|"ping 8.8.8.8<br/>host unreachable"| DNS["Internet / DNS<br/>8.8.8.8"]
-
-    style CLIENT fill:#1565c0,color:#fff,stroke:#0d47a1
-    style LAN fill:#2e7d32,color:#fff,stroke:#1b5e20
-    style WAN fill:#c62828,color:#fff,stroke:#8e0000
-    style HOME fill:#eeeeee,color:#555,stroke:#999,stroke-dasharray: 4 3
-    style DNS fill:#eeeeee,color:#555,stroke:#999,stroke-dasharray: 4 3
-```
-
 ![Initial connectivity failure](INC005.png)
 
 
@@ -43,6 +29,7 @@ The OPNsense WAN interface had an IPv4 address on the home network, but it didn'
 The WAN interface was changed to obtain its IPv4 configuration through DHCP so the home router could provide the WAN address and upstream gateway automatically.
 After the change, OPNsense had a valid route toward the home router at `192.168.1.1`.
 
+![OPNsense COnfirmation of DHCP](../../Screenshots/2-firewall-interface-result.png)
 
 ## Restoring Connectivity
 
@@ -58,20 +45,6 @@ The results were successful:
 - `tracert 8.8.8.8` showed the expected first hops through `10.10.20.1` and `192.168.1.1` before continuing through the ISP network.
 
 This confirmed that routing, outbound NAT, and DNS resolution were functioning from the client network.
-
-```mermaid
-flowchart LR
-    CLIENT["CLIENT01<br/>10.10.20.3"] -->|ping OK| LAN["FW01 LAN<br/>10.10.20.1"]
-    LAN -->|ping OK| WAN["FW01 WAN<br/>192.168.1.13<br/>DHCP gateway learned"]
-    WAN -->|ping OK| HOME["Home Router<br/>192.168.1.1"]
-    HOME -->|ping + DNS OK| DNS["Internet / DNS<br/>8.8.8.8 / google.com"]
-
-    style CLIENT fill:#1565c0,color:#fff,stroke:#0d47a1
-    style LAN fill:#2e7d32,color:#fff,stroke:#1b5e20
-    style WAN fill:#2e7d32,color:#fff,stroke:#1b5e20
-    style HOME fill:#2e7d32,color:#fff,stroke:#1b5e20
-    style DNS fill:#2e7d32,color:#fff,stroke:#1b5e20
-```
 
 ![Connectivity restored through FW01](../../Screenshots/2-firewall-client-communication.png)
 

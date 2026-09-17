@@ -54,7 +54,8 @@ NetLabz_Enterprise/
 ├── diagrams/                        # network diagrams
 ├── docs/
 │   ├── phase_0/                     # planning, baseline, standards
-│   └── phase_1/                     # virtual switching, test network
+│   ├── phase_1/                     # virtual switching, test network
+│   └── phase_2/                     # firewall setup & configuration / OPNsense
 ├── incidents/                       # troubleshooting write-ups (INC001, etc.)
 ├── NetLabz_Project_Checklist.xlsx   # full 21-phase task tracker
 ├── README.md
@@ -73,7 +74,7 @@ The host and repository are set up, and two temporary VMs can communicate on the
 |---|---|---|
 | [0 — Planning / Baseline](docs/phase_0/README.md) | [X] Complete | Host baseline, repo setup, naming/addressing/switch standards |
 | [1 — Virtual Switching & Test Network](docs/phase_1/README.md) | [X] Complete | Virtual switches + test VMs communication |
-| 2 — Firewall / Routing | [] In Progress | — |
+| [2 — Firewall / Routing](docs/phase_2/README.md) | [] In Progress | OPNsense setup and configuration |
 
 
 **Next up:** Choose and build the firewall VM, then use it to connect the lab networks under controlled rules.
