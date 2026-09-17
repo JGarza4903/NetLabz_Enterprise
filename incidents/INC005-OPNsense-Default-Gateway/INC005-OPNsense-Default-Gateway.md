@@ -19,17 +19,37 @@ Initial testing showed:
 
 Because the client could reach its default gateway but traffic failed immediately at `FW01`, the problem was narrowed down to routing on the firewall rather than the client-side network.
 
+```mermaid
+flowchart LR
+    CLIENT["CLIENT01<br/>10.10.20.3"] -->|ping OK| LAN["FW01 LAN<br/>10.10.20.1"]
+    LAN -->|ping OK| WAN["FW01 WAN<br/>192.168.1.13<br/>No default gateway"]
+    WAN -.->|"ping 192.168.1.1<br/>TIMEOUT"| HOME["Home Router<br/>192.168.1.1"]
+    WAN -.->|"ping 8.8.8.8<br/>host unreachable"| DNS["Internet / DNS<br/>8.8.8.8"]
+
+    style CLIENT fill:#1565c0,color:#fff,stroke:#0d47a1
+    style LAN fill:#2e7d32,color:#fff,stroke:#1b5e20
+    style WAN fill:#c62828,color:#fff,stroke:#8e0000
+    style HOME fill:#eeeeee,color:#555,stroke:#999,stroke-dasharray: 4 3
+    style DNS fill:#eeeeee,color:#555,stroke:#999,stroke-dasharray: 4 3
+```
+
 ![Initial connectivity failure](INC005.png)
 
 
 ## Identifying the Default Gateway Issue
 
-The OPNsense WAN interface had an IPv4 address on the home network, but it didn't have a usable upstream default gateway. Without a default route, `FW01` had no path for traffic destined outside directly connected networks.
+The OPNsense WAN interface had an IPv4 address on the home network, but it didn't have a usable upstream default gateway. Under **Interfaces > WAN**, the IPv4 Configuration Type was set to **Static IPv4**, and no gateway had been created or assigned to that address. Without a default route, `FW01` had no path for traffic destined outside directly connected networks — it could answer on `10.10.20.1`, but had nowhere to send anything beyond that.
 
-The WAN interface was changed to obtain its IPv4 configuration through DHCP so the home router could provide the WAN address and upstream gateway automatically.
-After the change, OPNsense had a valid route toward the home router at `192.168.1.1`.
+## Resolution Steps
 
-![OPNsense COnfirmation of DHCP](../../Screenshots/2-firewall-interface-result.png)
+1. Went to **Interfaces > WAN** and changed the **IPv4 Configuration Type** from Static IPv4 to **DHCP**.
+2. Removed the static IPv4 address/subnet fields (no longer needed once DHCP was selected).
+3. Saved and applied the interface change.
+4. Checked **System > Gateways** to confirm OPNsense had auto-created a `WAN_DHCP` gateway entry from the DHCP lease, and that it showed as online.
+5. Confirmed under **System > Gateways > Configuration** that `WAN_DHCP` was the active default gateway (rather than none, or a leftover static gateway with no route).
+
+After the change, `FW01` picked up `192.168.1.13/24` from the home router via DHCP along with a usable default gateway of `192.168.1.1`, giving it a valid route out.
+
 
 ## Restoring Connectivity
 
@@ -45,6 +65,20 @@ The results were successful:
 - `tracert 8.8.8.8` showed the expected first hops through `10.10.20.1` and `192.168.1.1` before continuing through the ISP network.
 
 This confirmed that routing, outbound NAT, and DNS resolution were functioning from the client network.
+
+```mermaid
+flowchart LR
+    CLIENT["CLIENT01<br/>10.10.20.3"] -->|ping OK| LAN["FW01 LAN<br/>10.10.20.1"]
+    LAN -->|ping OK| WAN["FW01 WAN<br/>192.168.1.13<br/>DHCP gateway learned"]
+    WAN -->|ping OK| HOME["Home Router<br/>192.168.1.1"]
+    HOME -->|ping + DNS OK| DNS["Internet / DNS<br/>8.8.8.8 / google.com"]
+
+    style CLIENT fill:#1565c0,color:#fff,stroke:#0d47a1
+    style LAN fill:#2e7d32,color:#fff,stroke:#1b5e20
+    style WAN fill:#2e7d32,color:#fff,stroke:#1b5e20
+    style HOME fill:#2e7d32,color:#fff,stroke:#1b5e20
+    style DNS fill:#2e7d32,color:#fff,stroke:#1b5e20
+```
 
 ![Connectivity restored through FW01](../../Screenshots/2-firewall-client-communication.png)
 

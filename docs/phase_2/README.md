@@ -110,17 +110,17 @@ After continuing to the site, I reached the OPNsense web interface and initial c
 
 ![OPNsense web GUI](../../Screenshots/2-firewall-gui-login.png)
 
-## Outbound routing and internet access
+## Routing / Internet Access
 
 After confirming that `CLIENT01` could reach the firewall, I tested connectivity beyond the LAN interface.
 
 The first test failed. `CLIENT01` could successfully ping `10.10.20.1`, but attempts to reach the home router at `192.168.1.1` or an internet address such as `8.8.8.8` failed. A traceroute stopped at `10.10.20.1`, with FW01 reporting that the destination was unreachable.
 
-![Connectivity failure before WAN gateway repair](../../Screenshots/2-firewall-pre-rules.png)
+![Connectivity failure before WAN gateway repair](../../incidents/INC005-OPNsense-Default-Gateway/INC005.png)
 
-The issue was traced to the WAN configuration. FW01 had a static WAN address but no upstream default gateway. Because the firewall did not have a usable default route, it had no path for traffic destined outside its directly connected networks.
+The issue was traced to the WAN configuration. `FW01` had a static WAN address configured but no upstream default gateway. Because the firewall didn't have a usable default route, it had no path for traffic destined outside its directly connected networks.
 
-I changed the WAN interface to DHCP. The home router then supplied the WAN configuration and upstream gateway automatically.
+I changed the WAN interface to DHCP via the web browser GUI on CLIENT01. The home router then supplied the WAN configuration and upstream gateway automatically.
 
 I documented the troubleshooting process separately in [INC005](../../Incidents/INC005-OPNsense-Default-Gateway.md).
 
