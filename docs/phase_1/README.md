@@ -15,7 +15,7 @@ Hyper-V currently shows the following project switches:
 
 The two test VMs were connected to `vSW-CLIENT`. An **internal** switch permits communication between connected VMs and the Hyper-V host's virtual adapter; it does not by itself provide a route to the home network. The external switch is separate from this test.
 
-![Hyper-V virtual switches](../../Screenshots/-vswitch-creation.png)
+![Hyper-V virtual switches](../../Screenshots/1-vswitch-creation.png)
 
 ## Building the test VMs
 

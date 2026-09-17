@@ -53,12 +53,13 @@ Docs, diagrams, scripts, and any troubleshooting write-ups will live in this rep
 
 ## Where things stand now
 
-**Phase 0 — getting the host ready**
+The host and repository are set up, and two temporary VMs can communicate on the client-side virtual switch. I'm finishing the Phase 1 packet captures and troubleshooting test before moving on to the firewall VM. Each phase has its own README with the setup, results, and screenshots. Full task-level tracking is in [`NetLabz_Project_Checklist.xlsx`](NetLabz_Project_Checklist.xlsx) — currently planning **Phase 2 of 21**.
 
-Right now I'm just:
-- Writing down the current Hyper-V config
-- Setting up this repo
-- Figuring out naming conventions before I have 15 VMs with names like "VM2"
-- Getting ready to spin up my first isolated virtual network
+| Phase | Status | Summary |
+|---|---|---|
+| [0 — Planning / Baseline](docs/phase_0/README.md) | [X] Complete | Host baseline, repo setup, naming/addressing/switch standards |
+| [1 — Virtual Switching & Test Network](docs/phase_1/README.md) | [X] Complete | Virtual switches + test VMs communication |
+| 2 — Firewall / Routing | [] In Progress | — |
 
-Next up: two VMs on an isolated network, just testing basic connectivity before I add anything fancier like routing.
+
+**Next up:** Choose and build the firewall VM, then use it to connect the lab networks under controlled rules.
